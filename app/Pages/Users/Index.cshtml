@@ -1,0 +1,105 @@
+@page
+@model ExpenseManagement.Pages.Users.IndexModel
+@{
+    ViewData["Title"] = "Users";
+    ViewData["ActivePage"] = "Users";
+}
+
+@if (Model.ServiceError is not null)
+{
+    <div class="error-bar">
+        <div class="error-bar-icon">⚠️</div>
+        <div class="error-bar-body">
+            <div class="error-bar-title">Database error – showing demo data</div>
+            <div class="error-bar-msg">
+                <strong>Location:</strong> @Model.ServiceError.FileName, line @Model.ServiceError.LineNumber<br />
+                <strong>Error:</strong> @Model.ServiceError.Message
+            </div>
+            @if (Model.ServiceError.ManagedIdentityAdvice is not null)
+            {
+                <div class="error-bar-advice">💡 @Model.ServiceError.ManagedIdentityAdvice</div>
+            }
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div style="background:var(--success-light);border:1px solid #6ee7b7;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.5rem;color:var(--success);">
+        ✅ @Model.SuccessMessage
+    </div>
+}
+
+<div style="display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:flex-start;flex-wrap:wrap">
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-header"><h2>All Users</h2></div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Manager</th>
+                        <th>Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model.Users)
+                    {
+                        <tr>
+                            <td class="text-muted text-small">@u.UserId</td>
+                            <td><strong>@u.UserName</strong></td>
+                            <td class="text-small">@u.Email</td>
+                            <td>
+                                <span class="badge @(u.RoleName == "Manager" ? "badge-submitted" : "badge-draft")">
+                                    @u.RoleName
+                                </span>
+                            </td>
+                            <td class="text-muted text-small">@(u.ManagerName ?? "—")</td>
+                            <td>@(u.IsActive ? "✅" : "❌")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add User Form -->
+    <div class="card">
+        <div class="card-header"><h2>Add User</h2></div>
+        <div class="card-body">
+            <form method="post">
+                <div class="form-group" style="margin-bottom:1rem">
+                    <label asp-for="Input.UserName">Full Name</label>
+                    <input asp-for="Input.UserName" required placeholder="e.g. Jane Smith" />
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                    <label asp-for="Input.Email">Email</label>
+                    <input asp-for="Input.Email" type="email" required placeholder="jane@example.co.uk" />
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                    <label asp-for="Input.RoleId">Role</label>
+                    <select asp-for="Input.RoleId" required>
+                        <option value="">Select role…</option>
+                        <option value="1">Employee</option>
+                        <option value="2">Manager</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:1.5rem">
+                    <label asp-for="Input.ManagerId">Manager (optional)</label>
+                    <select asp-for="Input.ManagerId">
+                        <option value="">None</option>
+                        @foreach (var u in Model.Users.Where(x => x.RoleName == "Manager"))
+                        {
+                            <option value="@u.UserId">@u.UserName</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Add User</button>
+            </form>
+        </div>
+    </div>
+</div>

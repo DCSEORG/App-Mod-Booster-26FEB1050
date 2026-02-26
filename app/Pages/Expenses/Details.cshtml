@@ -1,0 +1,87 @@
+@page
+@model ExpenseManagement.Pages.Expenses.DetailsModel
+@{
+    ViewData["Title"] = "Expense Details";
+    ViewData["ActivePage"] = "Index";
+}
+
+@if (Model.ServiceError is not null)
+{
+    <div class="error-bar">
+        <div class="error-bar-icon">⚠️</div>
+        <div class="error-bar-body">
+            <div class="error-bar-title">Database error</div>
+            <div class="error-bar-msg">
+                <strong>Location:</strong> @Model.ServiceError.FileName, line @Model.ServiceError.LineNumber<br />
+                <strong>Error:</strong> @Model.ServiceError.Message
+            </div>
+            @if (Model.ServiceError.ManagedIdentityAdvice is not null)
+            {
+                <div class="error-bar-advice">💡 @Model.ServiceError.ManagedIdentityAdvice</div>
+            }
+        </div>
+    </div>
+}
+
+@if (Model.Expense is null)
+{
+    <div class="empty-state">
+        <div class="empty-state-icon">🔍</div>
+        <p>Expense not found.</p>
+        <a href="/Index" class="btn btn-secondary" style="margin-top:1rem">Back to list</a>
+    </div>
+}
+else
+{
+    var exp = Model.Expense;
+    var badgeClass = exp.StatusName switch
+    {
+        "Approved" => "badge-approved",
+        "Rejected" => "badge-rejected",
+        "Submitted" => "badge-submitted",
+        _ => "badge-draft"
+    };
+
+    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">
+        <div class="card" style="flex:1;min-width:300px">
+            <div class="card-header">
+                <h2>Expense #@exp.ExpenseId</h2>
+                <span class="badge @badgeClass">@exp.StatusName</span>
+            </div>
+            <div class="card-body">
+                <dl style="display:grid;grid-template-columns:1fr 2fr;gap:.75rem .5rem;font-size:.875rem">
+                    <dt style="color:var(--gray-500);font-weight:500">Employee</dt>
+                    <dd>@exp.UserName<br /><span class="text-muted text-small">@exp.Email</span></dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Category</dt>
+                    <dd>@exp.CategoryName</dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Amount</dt>
+                    <dd class="amount">£@exp.AmountGBP.ToString("N2") @exp.Currency</dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Date</dt>
+                    <dd>@exp.ExpenseDate.ToString("dd MMMM yyyy")</dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Description</dt>
+                    <dd>@(exp.Description ?? "—")</dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Receipt</dt>
+                    <dd>@(exp.ReceiptFile ?? "No receipt")</dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Submitted</dt>
+                    <dd>@(exp.SubmittedAt.HasValue ? exp.SubmittedAt.Value.ToString("dd MMM yyyy HH:mm") : "Not submitted")</dd>
+                    @if (exp.ReviewedByName is not null)
+                    {
+                        <dt style="color:var(--gray-500);font-weight:500">Reviewed by</dt>
+                        <dd>@exp.ReviewedByName at @exp.ReviewedAt?.ToString("dd MMM yyyy HH:mm")</dd>
+                    }
+                    <dt style="color:var(--gray-500);font-weight:500">Created</dt>
+                    <dd>@exp.CreatedAt.ToString("dd MMM yyyy HH:mm")</dd>
+                </dl>
+
+                <hr class="separator" />
+                <div class="page-actions">
+                    @if (exp.StatusName == "Submitted")
+                    {
+                        <a href="/Expenses/Review?id=@exp.ExpenseId" class="btn btn-primary">Review / Approve</a>
+                    }
+                    <a href="/Index" class="btn btn-secondary">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}

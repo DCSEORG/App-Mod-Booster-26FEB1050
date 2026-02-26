@@ -1,0 +1,85 @@
+@page
+@model ExpenseManagement.Pages.Expenses.ReviewModel
+@{
+    ViewData["Title"] = "Review Expense";
+    ViewData["ActivePage"] = "Pending";
+}
+
+@if (Model.ServiceError is not null)
+{
+    <div class="error-bar">
+        <div class="error-bar-icon">⚠️</div>
+        <div class="error-bar-body">
+            <div class="error-bar-title">Error loading review data</div>
+            <div class="error-bar-msg">
+                <strong>Location:</strong> @Model.ServiceError.FileName, line @Model.ServiceError.LineNumber<br />
+                <strong>Error:</strong> @Model.ServiceError.Message
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.Expense is null)
+{
+    <div class="empty-state">
+        <div class="empty-state-icon">🔍</div>
+        <p>Expense not found or already reviewed.</p>
+        <a href="/Index" class="btn btn-secondary" style="margin-top:1rem">Back to list</a>
+    </div>
+}
+else
+{
+    var exp = Model.Expense;
+    <div style="max-width:680px">
+        <div class="card">
+            <div class="card-header">
+                <h2>Reviewing Expense #@exp.ExpenseId</h2>
+                <span class="badge badge-submitted">@exp.StatusName</span>
+            </div>
+            <div class="card-body">
+                <dl style="display:grid;grid-template-columns:140px 1fr;gap:.75rem .5rem;font-size:.875rem;margin-bottom:1.5rem">
+                    <dt style="color:var(--gray-500);font-weight:500">Employee</dt>
+                    <dd>@exp.UserName (@exp.Email)</dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Category</dt>
+                    <dd>@exp.CategoryName</dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Amount</dt>
+                    <dd class="amount">£@exp.AmountGBP.ToString("N2")</dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Date</dt>
+                    <dd>@exp.ExpenseDate.ToString("dd MMMM yyyy")</dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Description</dt>
+                    <dd>@(exp.Description ?? "—")</dd>
+                    <dt style="color:var(--gray-500);font-weight:500">Receipt</dt>
+                    <dd>@(exp.ReceiptFile ?? "No receipt")</dd>
+                </dl>
+
+                <hr class="separator" />
+                <p style="font-size:.875rem;color:var(--gray-700);margin-bottom:1rem">
+                    <strong>Select the reviewer (manager)</strong> and then approve or reject:
+                </p>
+                <form method="post" asp-page-handler="Approve" style="display:inline">
+                    <input type="hidden" name="id" value="@exp.ExpenseId" />
+                    <div class="form-group" style="margin-bottom:1rem;max-width:260px">
+                        <label>Reviewed By (Manager)</label>
+                        <select name="reviewerId" required>
+                            @foreach (var u in Model.Managers)
+                            {
+                                <option value="@u.UserId">@u.UserName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="page-actions">
+                        <button type="submit" class="btn btn-success">✅ Approve</button>
+                    </div>
+                </form>
+                <form method="post" asp-page-handler="Reject" style="display:inline;margin-top:.5rem">
+                    <input type="hidden" name="id" value="@exp.ExpenseId" />
+                    <input type="hidden" name="reviewerId" value="@(Model.Managers.FirstOrDefault()?.UserId)" />
+                    <div class="page-actions">
+                        <button type="submit" class="btn btn-danger">❌ Reject</button>
+                        <a href="/Index" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
