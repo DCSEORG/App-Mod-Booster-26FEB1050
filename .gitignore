@@ -1,0 +1,36 @@
+# .gitignore for Expense Management App
+
+# .NET build outputs
+bin/
+obj/
+publish/
+
+# VS / Rider IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# Environment / secrets
+.env
+.env.*
+appsettings.Local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+
+# Azure deployment artifacts (zip files are kept for deploy scripts)
+# app.zip is intentionally NOT ignored so it can be stored in the repo
+
+# Logs
+*.log

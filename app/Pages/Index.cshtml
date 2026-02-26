@@ -1,0 +1,164 @@
+@page
+@model ExpenseManagement.Pages.IndexModel
+@{
+    ViewData["Title"] = "All Expenses";
+    ViewData["ActivePage"] = "Index";
+}
+
+@if (Model.ServiceError is not null)
+{
+    <div class="error-bar">
+        <div class="error-bar-icon">⚠️</div>
+        <div class="error-bar-body">
+            <div class="error-bar-title">Database connection error – showing demo data</div>
+            <div class="error-bar-msg">
+                <strong>Location:</strong> @Model.ServiceError.FileName, line @Model.ServiceError.LineNumber (@Model.ServiceError.MemberName)<br />
+                <strong>Error:</strong> @Model.ServiceError.Message
+            </div>
+            @if (Model.ServiceError.ManagedIdentityAdvice is not null)
+            {
+                <div class="error-bar-advice">
+                    💡 <strong>Managed Identity Fix:</strong> @Model.ServiceError.ManagedIdentityAdvice
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Expenses</div>
+        <div class="stat-value">@Model.Expenses.Count</div>
+        <div class="stat-sub">All records</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Submitted</div>
+        <div class="stat-value">@Model.Expenses.Count(e => e.StatusName == "Submitted")</div>
+        <div class="stat-sub">Awaiting approval</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value">@Model.Expenses.Count(e => e.StatusName == "Approved")</div>
+        <div class="stat-sub">This view</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Value</div>
+        <div class="stat-value">£@Model.Expenses.Sum(e => e.AmountGBP).ToString("N2")</div>
+        <div class="stat-sub">GBP</div>
+    </div>
+</div>
+
+<!-- Filters -->
+<form method="get" class="filter-bar">
+    <div class="form-group">
+        <label>Status</label>
+        <select name="statusId" onchange="this.form.submit()">
+            <option value="">All Statuses</option>
+            @foreach (var s in Model.Statuses)
+            {
+                <option value="@s.StatusId" selected="@(Model.SelectedStatusId == s.StatusId)">@s.StatusName</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>User</label>
+        <select name="userId" onchange="this.form.submit()">
+            <option value="">All Users</option>
+            @foreach (var u in Model.Users)
+            {
+                <option value="@u.UserId" selected="@(Model.SelectedUserId == u.UserId)">@u.UserName</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Category</label>
+        <select name="categoryId" onchange="this.form.submit()">
+            <option value="">All Categories</option>
+            @foreach (var c in Model.Categories)
+            {
+                <option value="@c.CategoryId" selected="@(Model.SelectedCategoryId == c.CategoryId)">@c.CategoryName</option>
+            }
+        </select>
+    </div>
+    @if (Model.SelectedStatusId.HasValue || Model.SelectedUserId.HasValue || Model.SelectedCategoryId.HasValue)
+    {
+        <div class="form-group">
+            <label>&nbsp;</label>
+            <a href="/Index" class="btn btn-secondary btn-sm">Clear Filters</a>
+        </div>
+    }
+</form>
+
+<!-- Expenses Table -->
+<div class="card">
+    <div class="card-header">
+        <h2>Expense Records</h2>
+        <a href="/Expenses/Submit" class="btn btn-primary btn-sm">➕ New Expense</a>
+    </div>
+    <div class="table-wrapper">
+        @if (!Model.Expenses.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <p>No expenses found matching your filters.</p>
+            </div>
+        }
+        else
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Employee</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var exp in Model.Expenses)
+                    {
+                        var badgeClass = exp.StatusName switch
+                        {
+                            "Approved" => "badge-approved",
+                            "Rejected" => "badge-rejected",
+                            "Submitted" => "badge-submitted",
+                            _ => "badge-draft"
+                        };
+                        <tr>
+                            <td class="text-muted text-small">#@exp.ExpenseId</td>
+                            <td>
+                                <strong>@exp.UserName</strong><br />
+                                <span class="text-muted text-small">@exp.Email</span>
+                            </td>
+                            <td>@exp.CategoryName</td>
+                            <td class="text-small">@exp.ExpenseDate.ToString("dd MMM yyyy")</td>
+                            <td class="amount">£@exp.AmountGBP.ToString("N2")</td>
+                            <td><span class="badge @badgeClass">@exp.StatusName</span></td>
+                            <td class="text-small text-muted">
+                                @(exp.SubmittedAt.HasValue ? exp.SubmittedAt.Value.ToString("dd MMM HH:mm") : "—")
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:.375rem;">
+                                    <a href="/Expenses/Details?id=@exp.ExpenseId" class="btn btn-ghost btn-sm">View</a>
+                                    @if (exp.StatusName == "Submitted")
+                                    {
+                                        <a href="/Expenses/Review?id=@exp.ExpenseId" class="btn btn-sm btn-success">Review</a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@section TopbarActions {
+    <a href="/Expenses/Submit" class="btn btn-primary">➕ Submit Expense</a>
+}
