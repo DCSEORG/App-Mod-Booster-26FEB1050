@@ -50,7 +50,10 @@ public class ExpenseService : IExpenseService
         return new SqlConnection(connectionString);
     }
 
-    private ServiceError BuildError(Exception ex, string file, int line, string member)
+    private ServiceError BuildError(Exception ex,
+        [System.Runtime.CompilerServices.CallerFilePath] string file = "",
+        [System.Runtime.CompilerServices.CallerLineNumber] int line = 0,
+        [System.Runtime.CompilerServices.CallerMemberName] string member = "")
     {
         _logger.LogError(ex, "Database error at {File}:{Line} in {Member}", file, line, member);
         string? advice = null;
@@ -99,7 +102,7 @@ public class ExpenseService : IExpenseService
         }
         catch (Exception ex)
         {
-            return (GetDummyExpenses(), BuildError(ex, "ExpenseService.cs", 82, nameof(GetExpensesAsync)));
+            return (GetDummyExpenses(), BuildError(ex));
         }
     }
 
@@ -121,7 +124,7 @@ public class ExpenseService : IExpenseService
         }
         catch (Exception ex)
         {
-            return (GetDummyExpenses().FirstOrDefault(), BuildError(ex, "ExpenseService.cs", 101, nameof(GetExpenseByIdAsync)));
+            return (GetDummyExpenses().FirstOrDefault(), BuildError(ex));
         }
     }
 
@@ -150,7 +153,7 @@ public class ExpenseService : IExpenseService
         }
         catch (Exception ex)
         {
-            return (null, BuildError(ex, "ExpenseService.cs", 124, nameof(CreateExpenseAsync)));
+            return (null, BuildError(ex));
         }
     }
 
@@ -175,7 +178,7 @@ public class ExpenseService : IExpenseService
         }
         catch (Exception ex)
         {
-            return (false, BuildError(ex, "ExpenseService.cs", 148, nameof(UpdateExpenseStatusAsync)));
+            return (false, BuildError(ex));
         }
     }
 
@@ -201,7 +204,7 @@ public class ExpenseService : IExpenseService
         }
         catch (Exception ex)
         {
-            return (GetDummyUsers(), BuildError(ex, "ExpenseService.cs", 167, nameof(GetUsersAsync)));
+            return (GetDummyUsers(), BuildError(ex));
         }
     }
 
@@ -223,7 +226,7 @@ public class ExpenseService : IExpenseService
         }
         catch (Exception ex)
         {
-            return (null, BuildError(ex, "ExpenseService.cs", 185, nameof(GetUserByIdAsync)));
+            return (null, BuildError(ex));
         }
     }
 
@@ -247,7 +250,7 @@ public class ExpenseService : IExpenseService
         }
         catch (Exception ex)
         {
-            return (null, BuildError(ex, "ExpenseService.cs", 205, nameof(CreateUserAsync)));
+            return (null, BuildError(ex));
         }
     }
 
@@ -278,7 +281,7 @@ public class ExpenseService : IExpenseService
         }
         catch (Exception ex)
         {
-            return (GetDummyCategories(), BuildError(ex, "ExpenseService.cs", 228, nameof(GetCategoriesAsync)));
+            return (GetDummyCategories(), BuildError(ex));
         }
     }
 
@@ -304,7 +307,7 @@ public class ExpenseService : IExpenseService
         }
         catch (Exception ex)
         {
-            return (GetDummyStatuses(), BuildError(ex, "ExpenseService.cs", 248, nameof(GetStatusesAsync)));
+            return (GetDummyStatuses(), BuildError(ex));
         }
     }
 

@@ -117,12 +117,10 @@ echo "✓ App Service settings configured (including GenAI endpoints)"
 # ============================================================
 echo ""
 echo "Step 5: Updating Python scripts with deployment values..."
+# Cross-platform sed (works on Mac and Linux) – replace placeholder server name
 sed -i.bak "s|SERVER = \"example.database.windows.net\"|SERVER = \"${SQL_SERVER_FQDN}\"|g" run-sql.py && rm -f run-sql.py.bak
 sed -i.bak "s|SERVER = \"example.database.windows.net\"|SERVER = \"${SQL_SERVER_FQDN}\"|g" run-sql-dbrole.py && rm -f run-sql-dbrole.py.bak
 sed -i.bak "s|SERVER = \"example.database.windows.net\"|SERVER = \"${SQL_SERVER_FQDN}\"|g" run-sql-stored-procs.py && rm -f run-sql-stored-procs.py.bak
-sed -i.bak "s|DATABASE = \"database_name\"|DATABASE = \"${SQL_DATABASE_NAME}\"|g" run-sql.py && rm -f run-sql.py.bak
-sed -i.bak "s|DATABASE = \"database_name\"|DATABASE = \"${SQL_DATABASE_NAME}\"|g" run-sql-dbrole.py && rm -f run-sql-dbrole.py.bak
-sed -i.bak "s|DATABASE = \"database_name\"|DATABASE = \"${SQL_DATABASE_NAME}\"|g" run-sql-stored-procs.py && rm -f run-sql-stored-procs.py.bak
 echo "✓ Python scripts updated"
 
 # ============================================================
